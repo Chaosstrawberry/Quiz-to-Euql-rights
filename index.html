@@ -1,447 +1,595 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gleichberechtigungs-Quiz</title>
-  <style>
-    :root {
-      color-scheme: light;
-      --bg: #f1f5f9;
-      --card: #ffffff;
-      --text: #1f2937;
-      --muted: #4b5563;
-      --primary: #2563eb;
-      --success: #16a34a;
-      --danger: #dc2626;
-      --border: rgba(148, 163, 184, 0.3);
-      --shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Fair genug? — Gleichberechtigungs-Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: light;
+    --bg: #eef1f7;
+    --card: #ffffff;
+    --ink: #181c2e;
+    --muted: #5b6079;
+    --line: rgba(24,28,46,0.09);
+    --good: #0f8a4f;
+    --good-soft: #e3f6ea;
+    --bad: #d92d3f;
+    --bad-soft: #fdeaec;
+    --shadow: 0 24px 50px -20px rgba(24,28,46,0.28);
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body{
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, sans-serif;
+    background:
+      radial-gradient(circle at 12% 0%, rgba(109,92,231,0.14), transparent 45%),
+      radial-gradient(circle at 100% 20%, rgba(232,85,107,0.10), transparent 40%),
+      var(--bg);
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+    padding: 20px 14px 40px;
+  }
+  h1, h2, .brand, .topic-chip, .stat-num { font-family: 'Space Grotesk', 'Inter', sans-serif; }
 
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; min-height: 100vh; font-family: 'Inter', system-ui, sans-serif;
-      background: radial-gradient(circle at top left, rgba(37,99,235,0.15), transparent 30%),
-                  radial-gradient(circle at bottom right, rgba(34,197,94,0.12), transparent 25%),
-                  var(--bg);
-      color: var(--text);
-    }
+  .app{ width: 100%; max-width: 420px; }
 
-    .page {
-      max-width: 920px; margin: 0 auto; padding: 24px;
-    }
+  .brand{
+    display:flex; align-items:center; gap:9px;
+    font-size: 0.82rem; font-weight: 600; letter-spacing: 0.02em;
+    color: var(--muted); margin: 2px 4px 12px;
+  }
+  .brand .dot{ width:8px; height:8px; border-radius:50%; background: linear-gradient(135deg,#6d5ce7,#e8556b); flex:none; }
 
-    .quiz-card {
-      background: var(--card); border: 1px solid var(--border); border-radius: 24px;
-      box-shadow: var(--shadow); overflow: hidden;
-    }
+  .quiz-card{
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
 
-    .quiz-header {
-      padding: 32px 28px 22px;
-      display: grid; gap: 14px;
-    }
+  .topbar{ padding: 18px 18px 14px; }
+  .topbar h1{
+    margin: 0 0 4px; font-size: 1.32rem; font-weight: 700; letter-spacing: -0.01em;
+  }
+  .topbar .sub{ margin: 0; font-size: 0.83rem; color: var(--muted); line-height: 1.45; }
 
-    .quiz-header h1 {
-      margin: 0; font-size: clamp(2rem, 2.5vw, 2.5rem);
-      letter-spacing: -0.03em;
-    }
+  .meta-row{
+    display:flex; align-items:center; justify-content: space-between;
+    margin-top: 14px; font-size: 0.78rem; font-weight: 600; color: var(--muted);
+  }
+  .score-pill{
+    display:inline-flex; align-items:center; gap:5px;
+    background:#f3f1fb; color:#4c3fc7; padding: 4px 10px; border-radius: 999px;
+  }
 
-    .quiz-header p {
-      margin: 0; color: var(--muted); line-height: 1.7;
-    }
+  .segments{
+    display:grid; grid-auto-flow: column; gap: 3px; margin-top: 9px;
+  }
+  .seg{
+    height: 6px; border-radius: 4px; background: #e6e8f0;
+    position: relative; transition: background-color .35s ease;
+  }
+  .seg.current{ background:#d7daf5; }
+  .seg.correct{ background: var(--good); }
+  .seg.wrong{ background: var(--bad); }
 
-    .stats {
-      display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
-    }
+  .quiz-body{ padding: 16px 18px 20px; border-top: 1px solid var(--line); }
 
-    .stat-pill {
-      padding: 10px 14px; border-radius: 999px; background: #eef2ff; color: #1d4ed8;
-      font-size: 0.95rem; font-weight: 600;
-    }
+  .topic-chip{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.02em;
+    padding: 6px 10px; border-radius: 999px; margin-bottom: 12px;
+  }
+  .topic-chip .ic{ font-size: 0.9rem; line-height:1; }
 
-    .progress-bar {
-      width: 100%; height: 10px; border-radius: 999px; background: #e5e7eb;
-      overflow: hidden; margin-top: 6px;
-    }
+  .question-text{
+    margin: 0 0 16px; font-size: 1.05rem; font-weight: 700; line-height: 1.4;
+    letter-spacing: -0.005em;
+  }
 
-    .progress-fill {
-      width: 0%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #2563eb, #14b8a6);
-      transition: width 0.3s ease;
-    }
+  .answers{ display:grid; gap: 9px; }
+  .answers button{
+    all: unset; box-sizing: border-box;
+    display:flex; align-items:center; gap: 10px;
+    width: 100%; padding: 13px 14px; font-size: 0.92rem; line-height: 1.35;
+    border-radius: 13px; border: 1.5px solid var(--line);
+    background: #fafafc; color: var(--ink); cursor: pointer;
+    transition: border-color .15s ease, background-color .15s ease, transform .1s ease;
+  }
+  .answers button .letter{
+    flex: none; width: 24px; height: 24px; border-radius: 8px;
+    background: #eceefb; color: #4c3fc7; font-weight: 700; font-size: 0.72rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .answers button:hover:not(:disabled){ border-color: #b9bfe8; }
+  .answers button:active:not(:disabled){ transform: scale(0.99); }
+  .answers button:disabled{ cursor: default; }
 
-    .quiz-body {
-      padding: 28px; border-top: 1px solid var(--border);
-    }
+  .answers button.correct{ background: var(--good-soft); border-color: #86d3a8; }
+  .answers button.correct .letter{ background:#0f8a4f; color:#fff; }
+  .answers button.wrong{ background: var(--bad-soft); border-color: #f0a7ae; }
+  .answers button.wrong .letter{ background:#d92d3f; color:#fff; }
+  .answers button.dim{ opacity: 0.5; }
 
-    .question-text {
-      margin: 0 0 22px; font-size: 1.15rem; font-weight: 700;
-    }
+  .explain{
+    margin-top: 14px; padding: 12px 14px; border-radius: 13px;
+    background: #f6f5fb; border: 1px solid var(--line);
+    font-size: 0.85rem; line-height: 1.5; color: #34384f;
+    display: none;
+  }
+  .explain.show{ display: block; }
+  .explain b{ color: var(--ink); }
 
-    .topic-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 8px 12px; border-radius: 999px; background: #ede9fe; color: #5b21b6;
-      font-size: 0.9rem; margin-bottom: 10px;
-    }
+  .controls{ display:flex; gap: 10px; margin-top: 18px; }
+  .btn{
+    all: unset; box-sizing: border-box; flex: 1; text-align: center;
+    padding: 13px 16px; font-size: 0.92rem; font-weight: 700;
+    border-radius: 13px; cursor: pointer; transition: transform .1s ease, opacity .15s ease;
+  }
+  .btn:active{ transform: scale(0.98); }
+  .btn-primary{ background: linear-gradient(135deg, #6d5ce7, #4c3fc7); color: #fff; }
+  .btn-secondary{ background: #f1f2f7; color: var(--ink); }
+  .btn[hidden]{ display:none; }
 
-    .answers {
-      display: grid; gap: 12px;
-    }
+  .result{ text-align: center; padding: 6px 2px 4px; }
+  .result .ring{
+    width: 108px; height: 108px; border-radius: 50%; margin: 4px auto 16px;
+    display:flex; align-items:center; justify-content:center; position: relative;
+  }
+  .result .ring svg{ position:absolute; inset:0; transform: rotate(-90deg); }
+  .result .ring .pct{ font-size: 1.5rem; font-weight: 700; font-family:'Space Grotesk',sans-serif; }
+  .result h2{ margin: 0 0 8px; font-size: 1.25rem; }
+  .result p{ margin: 0 0 4px; font-size: 0.88rem; color: var(--muted); line-height: 1.55; }
+  .result .tip{
+    margin-top: 14px; padding: 12px 14px; border-radius: 13px;
+    background: #f6f5fb; font-size: 0.82rem; color: #34384f; text-align: left; line-height: 1.5;
+  }
 
-    .answers button {
-      width: 100%; padding: 16px 18px; border: 1px solid var(--border);
-      background: #fbfbfd; color: var(--text); text-align: left; font-size: 1rem;
-      border-radius: 16px; cursor: pointer; transition: transform 0.2s ease, border-color 0.2s ease;
-    }
+  footer.note{
+    text-align:center; font-size: 0.72rem; color: var(--muted);
+    margin: 16px 6px 0; line-height: 1.5;
+  }
 
-    .answers button:hover:not(:disabled) {
-      transform: translateY(-1px); border-color: #93c5fd;
-    }
-
-    .answers button.correct { background: #dcfce7; border-color: #4ade80; }
-    .answers button.wrong { background: #fee2e2; border-color: #fca5a5; }
-
-    .controls {
-      display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px;
-      justify-content: space-between; align-items: center;
-    }
-
-    .button-primary, .button-secondary {
-      border: none; border-radius: 14px; padding: 14px 22px; font-weight: 700;
-      cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .button-primary { background: linear-gradient(135deg, #2563eb, #14b8a6); color: white; }
-    .button-secondary { background: #f8fafc; color: #334155; }
-
-    .button-primary:hover, .button-secondary:hover { transform: translateY(-1px); }
-
-    .result-card {
-      padding: 32px 28px; text-align: center;
-      background: #f8fafc; border-radius: 20px; border: 1px solid var(--border);
-    }
-
-    .result-card h2 { margin: 0 0 18px; font-size: 1.9rem; }
-    .result-card p { margin: 0; color: var(--muted); }
-
-    @media (max-width: 640px) {
-      .page { padding: 16px; }
-      body { background-position: top left, bottom right; }
-      .quiz-card { border-radius: 20px; }
-      .quiz-header, .quiz-body { padding: 18px; }
-      .quiz-header h1 { font-size: 1.8rem; }
-      .stats { flex-direction: column; align-items: flex-start; }
-      .stat-pill { width: 100%; text-align: center; }
-      .progress-bar { height: 12px; }
-      .question-text { font-size: 1.05rem; margin-bottom: 18px; }
-      .answers button { padding: 16px; font-size: 1rem; }
-      .controls { flex-direction: column; align-items: stretch; }
-      .button-primary, .button-secondary { width: 100%; padding: 16px; }
-      .result-card { padding: 24px 18px; }
-      .result-card h2 { font-size: 1.6rem; }
-    }
-  </style>
+  @media (max-width: 380px){
+    body{ padding: 14px 10px 30px; }
+    .topbar{ padding: 15px 14px 12px; }
+    .quiz-body{ padding: 14px 14px 16px; }
+    .question-text{ font-size: 1rem; }
+    .answers button{ padding: 12px; font-size: 0.88rem; }
+  }
+</style>
 </head>
 <body>
-  <main class="page">
-    <section class="quiz-card">
-      <header class="quiz-header">
-        <div>
-          <h1>Gleichberechtigungs-Quiz</h1>
-          <p>Teste dein Wissen zu Gleichberechtigung, Rollenbildern und Fairness. Die Fragen sind gemischt, die Antworten zufällig angeordnet.</p>
-        </div>
+  <div class="app">
+    <div class="brand"><span class="dot"></span> FAIR GENUG? — GLEICHBERECHTIGUNGS-QUIZ</div>
 
-        <div class="stats">
-          <div class="stat-pill" id="progressText">Frage 1 / 12</div>
-          <div class="stat-pill" id="scoreText">Punkte: 0</div>
+    <section class="quiz-card">
+      <div class="topbar" id="topbar">
+        <h1 id="headline">Wie fair ist dein Wissen?</h1>
+        <p class="sub" id="subline">20 Fragen zu Rassismus, Rollenerwartungen, Gender Pay Gap in Österreich, Gender-Dysphorie und mehr.</p>
+        <div class="meta-row">
+          <span id="progressText">Frage 1 / 20</span>
+          <span class="score-pill" id="scoreText">0 richtig</span>
         </div>
-        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-      </header>
+        <div class="segments" id="segments"></div>
+      </div>
 
       <div class="quiz-body">
         <div id="questionBox"></div>
         <div id="answersBox" class="answers"></div>
+        <div id="explainBox" class="explain"></div>
 
         <div class="controls">
-          <button id="nextBtn" class="button-primary" style="display:none;">Nächste Frage</button>
-          <button id="restartBtn" class="button-secondary" style="display:none;">Nochmal spielen</button>
+          <button id="restartBtn" class="btn btn-secondary" hidden>Neu starten</button>
+          <button id="nextBtn" class="btn btn-primary" hidden>Weiter</button>
         </div>
       </div>
     </section>
-  </main>
 
-  <script>
-    const questions = [
-      {
-        text: "Was beschreibt den Gender Pay Gap?",
-        answers: [
-          { text: "Lohnunterschied zwischen Männern und Frauen", correct: true },
-          { text: "Unterschiedliche Arbeitszeiten", correct: false },
-          { text: "Nur freiwillige Gehaltsunterschiede", correct: false },
-          { text: "Nur Unterschiede bei Praktika", correct: false }
-        ],
-        topic: "Gender Pay Gap"
-      },
-      {
-        text: "Warum sind stereotype Rollenbilder problematisch?",
-        answers: [
-          { text: "Sie schränken Menschen in Berufswahl und Verhalten ein", correct: true },
-          { text: "Sie helfen beim schnellen Arbeiten", correct: false },
-          { text: "Sie gelten nur für Erwachsene", correct: false },
-          { text: "Sie haben keine Wirkung auf Gefühle", correct: false }
-        ],
-        topic: "Stereotype"
-      },
-      {
-        text: "Was bedeutet Intersectionality?",
-        answers: [
-          { text: "Verschiedene Diskriminierungsformen können sich überschneiden", correct: true },
-          { text: "Eine neue Sportart", correct: false },
-          { text: "Nur wirtschaftliche Ungleichheit", correct: false },
-          { text: "Das Gegenteil von Gleichberechtigung", correct: false }
-        ],
-        topic: "Intersectionality"
-      },
-      {
-        text: "Welche Aussage gehört zu gleichen Chancen?",
-        answers: [
-          { text: "Jede Person hat das Recht auf faire Teilnahme", correct: true },
-          { text: "Erfolg hängt nur von Glück ab", correct: false },
-          { text: "Nur diejenigen mit Macht können lernen", correct: false },
-          { text: "Chancen müssen nicht erklärt werden", correct: false }
-        ],
-        topic: "Chancengleichheit"
-      },
-      {
-        text: "Wieso ist Repräsentation wichtig?",
-        answers: [
-          { text: "Weil Menschen Vorbilder in Medien und Politik brauchen", correct: true },
-          { text: "Weil nur berühmte Menschen zählen", correct: false },
-          { text: "Weil es weniger Platz in der Schule schafft", correct: false },
-          { text: "Weil es immer teurer ist", correct: false }
-        ],
-        topic: "Repräsentation"
-      },
-      {
-        text: "Was ist ein Beispiel für sexuelle Belästigung?",
-        answers: [
-          { text: "Ungewollte Kommentare zum Körper", correct: true },
-          { text: "Ein Kompliment über das Outfit", correct: false },
-          { text: "Ein freundliches ‚Guten Morgen‘", correct: false },
-          { text: "Ein kleines Geschenk ohne Zustimmung", correct: false }
-        ],
-        topic: "Respekt"
-      },
-      {
-        text: "Wer profitiert von Gleichberechtigung?",
-        answers: [
-          { text: "Alle, weil fairere Regeln für jede Person entstehen", correct: true },
-          { text: "Nur Studierende", correct: false },
-          { text: "Nur Manager", correct: false },
-          { text: "Nur Menschen mit hohem Einkommen", correct: false }
-        ],
-        topic: "Gleichberechtigung"
-      },
-      {
-        text: "Warum ist faire Elternzeit wichtig?",
-        answers: [
-          { text: "Weil beide Eltern besser private und berufliche Aufgaben teilen können", correct: true },
-          { text: "Weil nur Mütter zuhause bleiben sollten", correct: false },
-          { text: "Weil Arbeit weniger wichtig ist", correct: false },
-          { text: "Weil Väter nicht unterstützen wollen", correct: false }
-        ],
-        topic: "Familie"
-      },
-      {
-        text: "Welche Aussage beschreibt Alltagsdiskriminierung?",
-        answers: [
-          { text: "Kleine Handlungen, die Menschen wegen ihres Aussehens benachteiligen", correct: true },
-          { text: "Nur schwere Straftaten", correct: false },
-          { text: "Ein Lob für gute Arbeit", correct: false },
-          { text: "Nur Probleme in anderen Ländern", correct: false }
-        ],
-        topic: "Diskriminierung"
-      },
-      {
-        text: "Was bedeutet Gender-Dysphorie?",
-        answers: [
-          { text: "Körper und empfundenes Geschlecht stimmen nicht überein", correct: true },
-          { text: "Eine Modevorliebe", correct: false },
-          { text: "Nur bis zur Pubertät", correct: false },
-          { text: "Eine Krankheit ohne Grund", correct: false }
-        ],
-        topic: "Gender"
-      },
-      {
-        text: "Welche Wirkung hat ein realistisches Körperbild?",
-        answers: [
-          { text: "Es reduziert Stress und fördert Selbstakzeptanz", correct: true },
-          { text: "Es macht Leute erfolgreicher im Sport", correct: false },
-          { text: "Es ist nur für Models wichtig", correct: false },
-          { text: "Es erzeugt mehr Konkurrenz", correct: false }
-        ],
-        topic: "Körperbild"
-      },
-      {
-        text: "Warum ist Teamarbeit in vielfältigen Gruppen stark?",
-        answers: [
-          { text: "Weil unterschiedliche Perspektiven bessere Lösungen bringen", correct: true },
-          { text: "Weil alle dieselbe Meinung haben müssen", correct: false },
-          { text: "Weil nur Experten zählen", correct: false },
-          { text: "Weil weniger Personen schneller sind", correct: false }
-        ],
-        topic: "Teamwork"
-      },
-      {
-        text: "Was bedeutet Inklusion am besten?",
-        answers: [
-          { text: "Menschen mit unterschiedlichen Voraussetzungen aktiv einzubeziehen", correct: true },
-          { text: "Nur gleiche Regeln für alle zu haben", correct: false },
-          { text: "Menschen zu trennen, damit sie sich wohler fühlen", correct: false },
-          { text: "Nur körperliche Behinderungen zu berücksichtigen", correct: false }
-        ],
-        topic: "Inklusion"
-      },
-      {
-        text: "Worauf solltest du bei einer respektvollen Diskussion achten?",
-        answers: [
-          { text: "Andere Meinungen ernst nehmen und zuhören", correct: true },
-          { text: "Schnell gewinnen wollen", correct: false },
-          { text: "Laut zu sprechen, um Aufmerksamkeit zu bekommen", correct: false },
-          { text: "Gleich immer zu unterbrechen", correct: false }
-        ],
-        topic: "Respekt"
-      },
-      {
-        text: "Was bedeutet Allies sein?",
-        answers: [
-          { text: "Menschen unterstützen, die weniger gehört werden", correct: true },
-          { text: "Nur eigene Interessen verfolgen", correct: false },
-          { text: "Andere ständig verbessern", correct: false },
-          { text: "Alle Probleme für andere lösen", correct: false }
-        ],
-        topic: "Allianz"
-      },
-      {
-        text: "Welche Aussage passt zur Barrierefreiheit?",
-        answers: [
-          { text: "Zugang für alle Menschen schaffen, unabhängig von Fähigkeiten", correct: true },
-          { text: "Nur Rampen für Rollstühle bauen", correct: false },
-          { text: "Nur digitale Inhalte veröffentlichen", correct: false },
-          { text: "Nur für besondere Tage erreichbar sein", correct: false }
-        ],
-        topic: "Barrierefreiheit"
-      },
-      {
-        text: "Warum hilft es, Begriffe wie ‚Mansplaining‘ zu kennen?",
-        answers: [
-          { text: "Um respektvolles Verhalten und Ungleichheiten besser zu erkennen", correct: true },
-          { text: "Damit man andere besser korrigieren kann", correct: false },
-          { text: "Weil solche Begriffe immer nett sind", correct: false },
-          { text: "Weil es nur ein Modewort ist", correct: false }
-        ],
-        topic: "Sprache"
-      }
-    ];
+    <footer class="note">Die Fragen &amp; Zahlen dienen der Sensibilisierung und ersetzen keine wissenschaftliche Quelle. Quelle Gender Pay Gap: Statistik Austria / Eurostat 2024.</footer>
+  </div>
 
-    let currentIndex = 0;
-    let score = 0;
-    const questionBox = document.getElementById('questionBox');
-    const answersBox = document.getElementById('answersBox');
-    const nextBtn = document.getElementById('nextBtn');
-    const restartBtn = document.getElementById('restartBtn');
-    const progressText = document.getElementById('progressText');
-    const scoreText = document.getElementById('scoreText');
-    const progressFill = document.getElementById('progressFill');
-    const totalQuestions = questions.length;
+<script>
+  const TOPIC_META = {
+    "Gender Pay Gap":     { icon:"⚖️", color:"#c2410c", bg:"#fdf1e9" },
+    "Erwartungen":        { icon:"🧭", color:"#6d28d9", bg:"#f2edfc" },
+    "Intersektionalität": { icon:"🔗", color:"#0f766e", bg:"#e8f5f3" },
+    "Chancengleichheit":  { icon:"🌱", color:"#15803d", bg:"#eaf6ec" },
+    "Repräsentation":     { icon:"🎤", color:"#1d4ed8", bg:"#eaf0fd" },
+    "Respekt":            { icon:"🚫", color:"#be123c", bg:"#fdeaf0" },
+    "Familie":            { icon:"👪", color:"#a16207", bg:"#faf3e2" },
+    "Rassismus":          { icon:"🌍", color:"#9d174d", bg:"#fbeaf1" },
+    "Gender-Dysphorie":   { icon:"🏳️‍⚧️", color:"#0e7490", bg:"#e7f4f7" },
+    "Körperbild":         { icon:"🪞", color:"#7c3aed", bg:"#f0eafd" },
+    "Inklusion":          { icon:"🤝", color:"#0d9488", bg:"#e6f6f4" },
+    "Sprache":            { icon:"💬", color:"#b45309", bg:"#faf0e2" }
+  };
 
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
+  const questions = [
+    {
+      topic: "Gender Pay Gap",
+      text: "Was beschreibt der Begriff Gender Pay Gap am besten?",
+      answers: [
+        { text: "Den durchschnittlichen Lohnunterschied zwischen Frauen und Männern", correct: true },
+        { text: "Unterschiedliche Arbeitszeiten zwischen Abteilungen", correct: false },
+        { text: "Nur freiwillige Gehaltsverhandlungen", correct: false },
+        { text: "Preisunterschiede bei Produkten für Frauen", correct: false }
+      ],
+      explain: "Der Gender Pay Gap misst den Unterschied im durchschnittlichen Bruttostundenverdienst von Frauen und Männern."
+    },
+    {
+      topic: "Gender Pay Gap",
+      text: "Wie hoch lag der Gender Pay Gap in Österreich laut Eurostat 2024 ungefähr?",
+      answers: [
+        { text: "Rund 17–18 Prozent", correct: true },
+        { text: "Rund 2 Prozent", correct: false },
+        { text: "Rund 35 Prozent", correct: false },
+        { text: "Er liegt bei 0 Prozent, weil es Gesetze dagegen gibt", correct: false }
+      ],
+      explain: "2024 lag er laut Eurostat bei 17,6 % — damit hat Österreich den dritthöchsten Gender Pay Gap der EU, deutlich über dem EU-Schnitt von 11,1 %."
+    },
+    {
+      topic: "Gender Pay Gap",
+      text: "Welcher Anteil des Gender Pay Gap in Österreich lässt sich laut Statistik Austria NICHT durch Faktoren wie Branche, Ausbildung oder Arbeitszeit erklären?",
+      answers: [
+        { text: "Etwa zwei Drittel", correct: true },
+        { text: "Gar keiner, er ist vollständig erklärbar", correct: false },
+        { text: "Nur ein winziger Rest von unter 5 %", correct: false },
+        { text: "Die Hälfte, exakt 50 %", correct: false }
+      ],
+      explain: "Rund zwei Drittel des Unterschieds bleiben statistisch unerklärt — ein Hinweis auf strukturelle Benachteiligung, nicht nur unterschiedliche Berufswahl."
+    },
+    {
+      topic: "Erwartungen",
+      text: "Was ist ein Beispiel für eine problematische geschlechtsspezifische Erwartung?",
+      answers: [
+        { text: "Von Mädchen wird erwartet, ruhig zu sein — von Jungen, keine Schwäche zu zeigen", correct: true },
+        { text: "Alle Kinder dürfen ihre Interessen frei wählen", correct: false },
+        { text: "Lehrpersonen behandeln alle Kinder gleich", correct: false },
+        { text: "Eltern fragen ihre Kinder nach ihren Wünschen", correct: false }
+      ],
+      explain: "Solche Erwartungen schreiben Verhalten allein aufgrund des Geschlechts vor, statt Kindern individuelle Entfaltung zuzugestehen."
+    },
+    {
+      topic: "Erwartungen",
+      text: "Wie wirkt sich die Erwartung 'echte Männer zeigen keine Gefühle' häufig aus?",
+      answers: [
+        { text: "Sie erschwert es, über Gefühle zu sprechen oder sich Hilfe zu holen", correct: true },
+        { text: "Sie macht Männer automatisch belastbarer", correct: false },
+        { text: "Sie hat keinerlei psychische Auswirkungen", correct: false },
+        { text: "Sie betrifft nur ältere Generationen", correct: false }
+      ],
+      explain: "Solche Rollenbilder werden mit höherer psychischer Belastung und selteneren Hilfegesuchen bei Männern in Verbindung gebracht."
+    },
+    {
+      topic: "Intersektionalität",
+      text: "Was bedeutet Intersektionalität?",
+      answers: [
+        { text: "Verschiedene Diskriminierungsformen können sich überschneiden und verstärken", correct: true },
+        { text: "Eine neue Sportart mit gemischten Teams", correct: false },
+        { text: "Nur wirtschaftliche Ungleichheit zählt", correct: false },
+        { text: "Das Gegenteil von Gleichberechtigung", correct: false }
+      ],
+      explain: "Eine Schwarze Frau kann z. B. gleichzeitig von Rassismus und Sexismus betroffen sein — diese Erfahrungen lassen sich nicht getrennt betrachten."
+    },
+    {
+      topic: "Chancengleichheit",
+      text: "Welche Aussage passt am besten zu gleichen Chancen?",
+      answers: [
+        { text: "Jede Person hat unabhängig von Herkunft oder Geschlecht das Recht auf faire Teilnahme", correct: true },
+        { text: "Erfolg hängt ausschließlich von Glück ab", correct: false },
+        { text: "Nur Menschen mit Verbindungen können aufsteigen", correct: false },
+        { text: "Chancen müssen nicht erklärt oder sichtbar gemacht werden", correct: false }
+      ],
+      explain: "Chancengleichheit bedeutet, dass Startbedingungen fair gestaltet werden, statt Herkunft oder Geschlecht über den Weg entscheiden zu lassen."
+    },
+    {
+      topic: "Repräsentation",
+      text: "Warum ist Repräsentation in Medien und Politik wichtig?",
+      answers: [
+        { text: "Weil Menschen Vorbilder brauchen, die ihre Lebensrealität widerspiegeln", correct: true },
+        { text: "Weil nur berühmte Personen zählen", correct: false },
+        { text: "Weil es Diskussionen unnötig macht", correct: false },
+        { text: "Weil dadurch alles automatisch gerecht wird", correct: false }
+      ],
+      explain: "Sichtbarkeit vielfältiger Vorbilder zeigt, dass bestimmte Wege und Positionen für alle offenstehen — nicht nur für eine Mehrheitsgruppe."
+    },
+    {
+      topic: "Respekt",
+      text: "Was ist ein Beispiel für sexuelle Belästigung?",
+      answers: [
+        { text: "Ungewollte, wiederholte Kommentare über den Körper einer Person", correct: true },
+        { text: "Ein respektvolles Kompliment, das offen zurückgewiesen werden kann", correct: false },
+        { text: "Ein freundliches 'Guten Morgen' unter Kolleg:innen", correct: false },
+        { text: "Feedback zu einer Präsentation", correct: false }
+      ],
+      explain: "Entscheidend ist, dass die Aufmerksamkeit unerwünscht ist und die betroffene Person sich unwohl oder bedrängt fühlt."
+    },
+    {
+      topic: "Familie",
+      text: "Warum ist gerecht verteilte Elternzeit wichtig?",
+      answers: [
+        { text: "Weil beide Elternteile Care-Arbeit und Beruf partnerschaftlich teilen können", correct: true },
+        { text: "Weil nur Mütter zuhause bleiben sollten", correct: false },
+        { text: "Weil Erwerbsarbeit für Väter unwichtig ist", correct: false },
+        { text: "Weil Väter grundsätzlich weniger Fürsorge leisten können", correct: false }
+      ],
+      explain: "Gleichberechtigte Elternzeit verringert langfristig auch den Gender Pay Gap, da Frauen seltener beruflich zurückstecken müssen."
+    },
+    {
+      topic: "Rassismus",
+      text: "Was beschreibt Rassismus am treffendsten?",
+      answers: [
+        { text: "Benachteiligung oder Abwertung von Menschen aufgrund ihrer Herkunft, Hautfarbe oder Kultur", correct: true },
+        { text: "Jede Form von Kritik an einer anderen Kultur", correct: false },
+        { text: "Ein Problem, das es nur in der Vergangenheit gab", correct: false },
+        { text: "Ein rein individuelles Gefühl ohne gesellschaftliche Wirkung", correct: false }
+      ],
+      explain: "Rassismus wirkt sowohl auf zwischenmenschlicher Ebene als auch strukturell, etwa bei Zugang zu Wohnungen, Jobs oder Bildung."
+    },
+    {
+      topic: "Rassismus",
+      text: "Was bedeutet struktureller (institutioneller) Rassismus?",
+      answers: [
+        { text: "Regeln oder Abläufe in Institutionen benachteiligen bestimmte Gruppen systematisch — auch ohne bösen Willen Einzelner", correct: true },
+        { text: "Rassismus, der ausschließlich in Gesetzen sichtbar ist", correct: false },
+        { text: "Ein Begriff für persönliche Vorurteile allein", correct: false },
+        { text: "Etwas, das nur in autoritären Staaten vorkommt", correct: false }
+      ],
+      explain: "Beispiel: Wenn Bewerbungen mit ausländisch klingenden Namen bei gleicher Qualifikation seltener zu Vorstellungsgesprächen führen."
+    },
+    {
+      topic: "Rassismus",
+      text: "Was ist ein Beispiel für Alltagsrassismus?",
+      answers: [
+        { text: "Eine Person wird ständig gefragt, 'wo sie wirklich herkommt', obwohl sie hier geboren ist", correct: true },
+        { text: "Ein Gespräch über verschiedene Länderküchen", correct: false },
+        { text: "Interesse an einer fremden Sprache zeigen", correct: false },
+        { text: "Jemanden nach seinem Namen fragen", correct: false }
+      ],
+      explain: "Alltagsrassismus zeigt sich oft in scheinbar 'kleinen' wiederkehrenden Kommentaren oder Blicken, die Betroffene als 'anders' markieren."
+    },
+    {
+      topic: "Gender-Dysphorie",
+      text: "Was bedeutet Gender-Dysphorie?",
+      answers: [
+        { text: "Ein belastendes Gefühl, wenn das körperliche Geschlecht nicht mit der eigenen Geschlechtsidentität übereinstimmt", correct: true },
+        { text: "Eine vorübergehende Modevorliebe", correct: false },
+        { text: "Ein Zustand, der nur bis zur Pubertät auftreten kann", correct: false },
+        { text: "Eine frei wählbare Meinung ohne echten Leidensdruck", correct: false }
+      ],
+      explain: "Gender-Dysphorie ist im medizinischen Sinn das Unwohlsein durch diese Diskrepanz — nicht die Geschlechtsidentität selbst."
+    },
+    {
+      topic: "Gender-Dysphorie",
+      text: "Was hilft Menschen mit Gender-Dysphorie erwiesenermaßen am meisten?",
+      answers: [
+        { text: "Anerkennung der eigenen Identität, Unterstützung durch Umfeld und Zugang zu qualifizierter Beratung", correct: true },
+        { text: "Das Thema komplett totschweigen", correct: false },
+        { text: "Druck, sich 'normal' zu verhalten", correct: false },
+        { text: "Isolation von Familie und Freund:innen", correct: false }
+      ],
+      explain: "Studien zeigen: soziale Unterstützung und Akzeptanz senken das Risiko für psychische Belastung deutlich."
+    },
+    {
+      topic: "Körperbild",
+      text: "Welche Wirkung hat ein realistisches, vielfältiges Körperbild in Medien?",
+      answers: [
+        { text: "Es reduziert Druck und Vergleichsstress und fördert Selbstakzeptanz", correct: true },
+        { text: "Es macht Menschen automatisch erfolgreicher im Sport", correct: false },
+        { text: "Es ist nur für Models relevant", correct: false },
+        { text: "Es hat keinerlei psychologische Wirkung", correct: false }
+      ],
+      explain: "Einseitige Schönheitsideale werden mit erhöhtem Risiko für Essstörungen und geringerem Selbstwertgefühl in Verbindung gebracht."
+    },
+    {
+      topic: "Inklusion",
+      text: "Was bedeutet Inklusion am treffendsten?",
+      answers: [
+        { text: "Menschen mit unterschiedlichen Voraussetzungen von Anfang an aktiv einbeziehen", correct: true },
+        { text: "Für alle exakt dieselben Maßnahmen ohne Rücksicht auf Bedürfnisse", correct: false },
+        { text: "Menschen räumlich zu trennen, damit sie sich wohler fühlen", correct: false },
+        { text: "Nur körperliche Behinderungen berücksichtigen", correct: false }
+      ],
+      explain: "Inklusion bedeutet, Strukturen von vornherein so zu gestalten, dass niemand nachträglich 'integriert' werden muss."
+    },
+    {
+      topic: "Respekt",
+      text: "Was bedeutet es, ein:e Ally (Verbündete:r) zu sein?",
+      answers: [
+        { text: "Menschen aktiv unterstützen, deren Stimmen seltener gehört werden", correct: true },
+        { text: "Ausschließlich die eigenen Interessen verfolgen", correct: false },
+        { text: "Für andere sprechen, ohne sie zu fragen", correct: false },
+        { text: "Alle Probleme stellvertretend für andere lösen", correct: false }
+      ],
+      explain: "Gute Verbündete hören zu, geben Raum und nutzen die eigene Position, um andere sichtbarer zu machen — statt sich in den Vordergrund zu stellen."
+    },
+    {
+      topic: "Sprache",
+      text: "Warum hilft es, Begriffe wie 'Mansplaining' zu kennen?",
+      answers: [
+        { text: "Weil sie helfen, wiederkehrende respektlose Muster im Gespräch zu erkennen und zu benennen", correct: true },
+        { text: "Damit man andere ständig damit korrigieren kann", correct: false },
+        { text: "Weil solche Begriffe nur ein kurzlebiges Modewort sind", correct: false },
+        { text: "Weil sie automatisch jede Erklärung eines Mannes verbieten", correct: false }
+      ],
+      explain: "Der Begriff beschreibt ein bestimmtes Muster (herablassendes Erklären ohne Kompetenzbezug) — nicht jede Erklärung eines Mannes."
+    }
+  ];
+
+  let order = [];
+  let currentIndex = 0;
+  let score = 0;
+
+  const questionBox = document.getElementById('questionBox');
+  const answersBox = document.getElementById('answersBox');
+  const explainBox = document.getElementById('explainBox');
+  const nextBtn = document.getElementById('nextBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const progressText = document.getElementById('progressText');
+  const scoreText = document.getElementById('scoreText');
+  const segmentsEl = document.getElementById('segments');
+  const headline = document.getElementById('headline');
+  const subline = document.getElementById('subline');
+  const total = questions.length;
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  function buildSegments() {
+    segmentsEl.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+      const s = document.createElement('div');
+      s.className = 'seg';
+      s.id = 'seg-' + i;
+      segmentsEl.appendChild(s);
+    }
+  }
+
+  function resetQuiz() {
+    currentIndex = 0;
+    score = 0;
+    order = shuffle(questions.map((q, i) => i));
+    scoreText.textContent = '0 richtig';
+    progressText.textContent = `Frage 1 / ${total}`;
+    headline.textContent = 'Wie fair ist dein Wissen?';
+    subline.textContent = `${total} Fragen zu Rassismus, Rollenerwartungen, Gender Pay Gap in Österreich, Gender-Dysphorie und mehr.`;
+    restartBtn.hidden = true;
+    nextBtn.hidden = true;
+    buildSegments();
+    document.getElementById('segments').style.display = '';
+  }
+
+  function markSegment(index, wasCorrect, topic) {
+    const seg = document.getElementById('seg-' + index);
+    if (!seg) return;
+    seg.classList.remove('current');
+    seg.classList.add(wasCorrect ? 'correct' : 'wrong');
+  }
+
+  function showQuestion() {
+    const q = questions[order[currentIndex]];
+    const meta = TOPIC_META[q.topic] || { icon:"✳️", color:"#4c3fc7", bg:"#eceefb" };
+    const shuffledAnswers = shuffle(q.answers.map(a => a));
+
+    questionBox.innerHTML = `
+      <div class="topic-chip" style="background:${meta.bg};color:${meta.color}">
+        <span class="ic">${meta.icon}</span>${q.topic}
+      </div>
+      <p class="question-text">${q.text}</p>
+    `;
+
+    answersBox.innerHTML = '';
+    explainBox.className = 'explain';
+    explainBox.innerHTML = '';
+    const letters = ['A', 'B', 'C', 'D'];
+
+    shuffledAnswers.forEach((answer, i) => {
+      const button = document.createElement('button');
+      button.innerHTML = `<span class="letter">${letters[i]}</span><span>${answer.text}</span>`;
+      button.addEventListener('click', () => selectAnswer(button, answer.correct, q.explain));
+      answersBox.appendChild(button);
+    });
+
+    nextBtn.hidden = true;
+    const segCurrent = document.getElementById('seg-' + currentIndex);
+    if (segCurrent) segCurrent.classList.add('current');
+    progressText.textContent = `Frage ${currentIndex + 1} / ${total}`;
+  }
+
+  function selectAnswer(button, isCorrect, explainText) {
+    const buttons = Array.from(answersBox.querySelectorAll('button'));
+    buttons.forEach(btn => { btn.disabled = true; if (btn !== button) btn.classList.add('dim'); });
+
+    if (isCorrect) {
+      button.classList.remove('dim');
+      button.classList.add('correct');
+      score++;
+    } else {
+      button.classList.remove('dim');
+      button.classList.add('wrong');
+      const correctBtn = buttons.find(btn => btn.textContent.trim() === (
+        questions[order[currentIndex]].answers.find(a => a.correct).text
+      ));
+      if (correctBtn) { correctBtn.classList.remove('dim'); correctBtn.classList.add('correct'); }
     }
 
-    function resetQuiz() {
-      currentIndex = 0;
-      score = 0;
-      scoreText.textContent = `Punkte: ${score}`;
-      progressText.textContent = `Frage 1 / ${totalQuestions}`;
-      progressFill.style.width = `0%`;
-      restartBtn.style.display = 'none';
-      nextBtn.style.display = 'none';
-      shuffle(questions);
-      questions.forEach(q => shuffle(q.answers));
-    }
+    markSegment(currentIndex, isCorrect);
+    scoreText.textContent = `${score} richtig`;
+    explainBox.innerHTML = `<b>${isCorrect ? 'Richtig.' : 'Nicht ganz.'}</b> ${explainText}`;
+    explainBox.classList.add('show');
+    nextBtn.hidden = false;
+    nextBtn.textContent = (currentIndex === total - 1) ? 'Ergebnis ansehen' : 'Weiter';
+  }
 
-    function showQuestion() {
-      const question = questions[currentIndex];
-      questionBox.innerHTML = `
-        <div class="topic-badge">${question.topic}</div>
-        <p class="question-text">${question.text}</p>
-      `;
-      answersBox.innerHTML = '';
-      question.answers.forEach(answer => {
-        const button = document.createElement('button');
-        button.textContent = answer.text;
-        button.addEventListener('click', () => selectAnswer(button, answer.correct));
-        answersBox.appendChild(button);
-      });
-      nextBtn.style.display = 'none';
-      progressText.textContent = `Frage ${currentIndex + 1} / ${totalQuestions}`;
-      progressFill.style.width = `${((currentIndex) / totalQuestions) * 100}%`;
-    }
+  function tierMessage(pct) {
+    if (pct === 100) return "Perfekt! Du kennst dich richtig gut aus.";
+    if (pct >= 80) return "Sehr stark — du hast ein solides Bewusstsein für diese Themen.";
+    if (pct >= 50) return "Guter Ansatz — bei manchen Themen ist noch Luft nach oben.";
+    return "Ein guter Startpunkt, um sich weiter mit dem Thema zu beschäftigen.";
+  }
 
-    function selectAnswer(button, isCorrect) {
-      const buttons = Array.from(answersBox.querySelectorAll('button'));
-      buttons.forEach(btn => btn.disabled = true);
+  function showResults() {
+    const pct = Math.round((score / total) * 100);
+    const circumference = 2 * Math.PI * 46;
+    const offset = circumference - (pct / 100) * circumference;
 
-      if (isCorrect) {
-        button.classList.add('correct');
-        score++;
-      } else {
-        button.classList.add('wrong');
-        const correctButton = buttons.find((btn, index) => {
-          return questions[currentIndex].answers[index].text === btn.textContent &&
-                 questions[currentIndex].answers[index].correct;
-        });
-        if (correctButton) correctButton.classList.add('correct');
-      }
+    document.getElementById('segments').style.display = 'none';
+    progressText.textContent = 'Fertig';
+    headline.textContent = 'Dein Ergebnis';
+    subline.textContent = '';
 
-      scoreText.textContent = `Punkte: ${score}`;
-      nextBtn.style.display = 'inline-flex';
-    }
-
-    function showResults() {
-      questionBox.innerHTML = `
-        <div class="result-card">
-          <h2>Gut gemacht!</h2>
-          <p>Du hast ${score} von ${totalQuestions} Fragen richtig beantwortet.</p>
-          <p>Mehr Wissen schafft mehr Respekt – probiere den Quiz nochmal, um deine Punktzahl zu verbessern.</p>
+    questionBox.innerHTML = `
+      <div class="result">
+        <div class="ring">
+          <svg width="108" height="108" viewBox="0 0 108 108">
+            <circle cx="54" cy="54" r="46" fill="none" stroke="#eceefb" stroke-width="10"/>
+            <circle cx="54" cy="54" r="46" fill="none" stroke="#6d5ce7" stroke-width="10"
+              stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/>
+          </svg>
+          <span class="pct">${pct}%</span>
         </div>
-      `;
-      answersBox.innerHTML = '';
-      nextBtn.style.display = 'none';
-      restartBtn.style.display = 'inline-flex';
-      progressText.textContent = `Fertig`;
-      progressFill.style.width = `100%`;
-    }
+        <h2>${score} von ${total} richtig</h2>
+        <p>${tierMessage(pct)}</p>
+        <div class="tip">Mehr Wissen schafft mehr Verständnis füreinander — spiel gern nochmal, die Fragen und Antworten werden dabei neu gemischt.</div>
+      </div>
+    `;
+    answersBox.innerHTML = '';
+    explainBox.className = 'explain';
+    explainBox.innerHTML = '';
+    nextBtn.hidden = true;
+    restartBtn.hidden = false;
+  }
 
-    nextBtn.addEventListener('click', () => {
-      currentIndex++;
-      if (currentIndex < totalQuestions) {
-        showQuestion();
-      } else {
-        showResults();
-      }
-    });
-
-    restartBtn.addEventListener('click', () => {
-      resetQuiz();
+  nextBtn.addEventListener('click', () => {
+    currentIndex++;
+    if (currentIndex < total) {
       showQuestion();
-    });
+    } else {
+      showResults();
+    }
+  });
 
+  restartBtn.addEventListener('click', () => {
     resetQuiz();
     showQuestion();
-  </script>
+  });
+
+  resetQuiz();
+  showQuestion();
+</script>
 </body>
 </html>
