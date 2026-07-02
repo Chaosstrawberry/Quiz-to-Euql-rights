@@ -75,7 +75,13 @@
   }
   .seg{
     height: 6px; border-radius: 4px; background: #e6e8f0;
-    position: relative; transition: background-color .35s ease;
+    position: relative; transition: background-color .35s ease, transform .3s ease;
+  }
+  .seg.correct, .seg.wrong { animation: segPop .4s ease; }
+  @keyframes segPop {
+    0% { transform: scaleY(1); }
+    50% { transform: scaleY(1.8); }
+    100% { transform: scaleY(1); }
   }
   .seg.current{ background:#d7daf5; }
   .seg.correct{ background: var(--good); }
@@ -102,60 +108,146 @@
     width: 100%; padding: 13px 14px; font-size: 0.92rem; line-height: 1.35;
     border-radius: 13px; border: 1.5px solid var(--line);
     background: #fafafc; color: var(--ink); cursor: pointer;
-    transition: border-color .15s ease, background-color .15s ease, transform .1s ease;
+    transition: border-color .2s ease, background-color .2s ease, transform .15s ease, box-shadow .2s ease;
+    animation: fadeInUp .4s ease backwards;
+  }
+  .answers button:nth-child(1) { animation-delay: 0.05s; }
+  .answers button:nth-child(2) { animation-delay: 0.1s; }
+  .answers button:nth-child(3) { animation-delay: 0.15s; }
+  .answers button:nth-child(4) { animation-delay: 0.2s; }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   .answers button .letter{
     flex: none; width: 24px; height: 24px; border-radius: 8px;
     background: #eceefb; color: #4c3fc7; font-weight: 700; font-size: 0.72rem;
     display:flex; align-items:center; justify-content:center;
   }
-  .answers button:hover:not(:disabled){ border-color: #b9bfe8; }
-  .answers button:active:not(:disabled){ transform: scale(0.99); }
+  .answers button:hover:not(:disabled){ 
+    border-color: #b9bfe8; 
+    background: #f0f2ff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(109,92,231,0.12);
+  }
+  .answers button:active:not(:disabled){ 
+    transform: scale(0.98) translateY(0);
+  }
   .answers button:disabled{ cursor: default; }
 
-  .answers button.correct{ background: var(--good-soft); border-color: #86d3a8; }
+  .answers button.correct{ 
+    background: var(--good-soft); 
+    border-color: #86d3a8; 
+    animation: correctPulse .5s ease;
+  }
+  @keyframes correctPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
   .answers button.correct .letter{ background:#0f8a4f; color:#fff; }
-  .answers button.wrong{ background: var(--bad-soft); border-color: #f0a7ae; }
+  .answers button.wrong{ 
+    background: var(--bad-soft); 
+    border-color: #f0a7ae; 
+    animation: wrongShake .4s ease;
+  }
+  @keyframes wrongShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
   .answers button.wrong .letter{ background:#d92d3f; color:#fff; }
-  .answers button.dim{ opacity: 0.5; }
+  .answers button.dim{ 
+    opacity: 0.4; 
+    transition: opacity .4s ease, transform .4s ease;
+    transform: scale(0.97);
+  }
 
   .explain{
     margin-top: 14px; padding: 12px 14px; border-radius: 13px;
     background: #f6f5fb; border: 1px solid var(--line);
     font-size: 0.85rem; line-height: 1.5; color: #34384f;
     display: none;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .35s ease, transform .35s ease;
   }
-  .explain.show{ display: block; }
+  .explain.show{ 
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+  }
   .explain b{ color: var(--ink); }
 
   .controls{ display:flex; gap: 10px; margin-top: 18px; }
   .btn{
     all: unset; box-sizing: border-box; flex: 1; text-align: center;
     padding: 13px 16px; font-size: 0.92rem; font-weight: 700;
-    border-radius: 13px; cursor: pointer; transition: transform .1s ease, opacity .15s ease;
+    border-radius: 13px; cursor: pointer; 
+    transition: transform .2s ease, opacity .2s ease, box-shadow .2s ease;
+    animation: fadeInUp .3s ease backwards;
+    animation-delay: 0.3s;
   }
-  .btn:active{ transform: scale(0.98); }
+  .btn:hover:not([hidden]) { 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  }
+  .btn:active:not([hidden]){ transform: scale(0.97) translateY(0); }
   .btn-primary{ background: linear-gradient(135deg, #6d5ce7, #4c3fc7); color: #fff; }
   .btn-secondary{ background: #f1f2f7; color: var(--ink); }
   .btn[hidden]{ display:none; }
+
+  .share-controls{
+    display:flex; gap: 10px; margin-top: 12px; padding: 0 18px 20px;
+    animation: fadeInUp .4s ease backwards;
+  }
+  .share-controls[hidden]{ display:none; }
 
   .result{ text-align: center; padding: 6px 2px 4px; }
   .result .ring{
     width: 108px; height: 108px; border-radius: 50%; margin: 4px auto 16px;
     display:flex; align-items:center; justify-content:center; position: relative;
+    animation: ringAppear .6s ease backwards;
+  }
+  @keyframes ringAppear {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
   }
   .result .ring svg{ position:absolute; inset:0; transform: rotate(-90deg); }
-  .result .ring .pct{ font-size: 1.5rem; font-weight: 700; font-family:'Space Grotesk',sans-serif; }
-  .result h2{ margin: 0 0 8px; font-size: 1.25rem; }
-  .result p{ margin: 0 0 4px; font-size: 0.88rem; color: var(--muted); line-height: 1.55; }
+  .result .ring svg circle:last-child {
+    transition: stroke-dashoffset 1.2s ease-in-out;
+  }
+  .result .ring .pct{ 
+    font-size: 1.5rem; font-weight: 700; font-family:'Space Grotesk',sans-serif;
+    animation: pctAppear .6s .3s ease backwards;
+  }
+  @keyframes pctAppear {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .result h2{ 
+    margin: 0 0 8px; font-size: 1.25rem;
+    animation: fadeInUp .4s .4s ease backwards;
+  }
+  .result p{ 
+    margin: 0 0 4px; font-size: 0.88rem; color: var(--muted); line-height: 1.55;
+    animation: fadeInUp .4s .45s ease backwards;
+  }
   .result .tip{
     margin-top: 14px; padding: 12px 14px; border-radius: 13px;
     background: #f6f5fb; font-size: 0.82rem; color: #34384f; text-align: left; line-height: 1.5;
+    animation: fadeInUp .4s .5s ease backwards;
   }
 
   footer.note{
     text-align:center; font-size: 0.72rem; color: var(--muted);
     margin: 16px 6px 0; line-height: 1.5;
+    animation: fadeIn .6s ease backwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   @media (max-width: 380px){
@@ -194,7 +286,11 @@
       </div>
     </section>
 
-    <footer class="note">Die Fragen &amp; Zahlen dienen der Sensibilisierung und ersetzen keine wissenschaftliche Quelle. Quelle Gender Pay Gap: Statistik Austria / Eurostat 2024.</footer>
+    <div class="share-controls" id="shareControls" hidden>
+      <button id="shareBtn" class="btn btn-primary">Ergebnis teilen</button>
+    </div>
+
+    <footer class="note">Die Fragen & Zahlen dienen der Sensibilisierung und ersetzen keine wissenschaftliche Quelle. Quelle Gender Pay Gap: Statistik Austria / Eurostat 2024.</footer>
   </div>
 
 <script>
@@ -471,6 +567,7 @@
     nextBtn.hidden = true;
     buildSegments();
     document.getElementById('segments').style.display = '';
+    document.getElementById('shareControls').hidden = true;
   }
 
   function markSegment(index, wasCorrect, topic) {
@@ -572,6 +669,9 @@
     explainBox.innerHTML = '';
     nextBtn.hidden = true;
     restartBtn.hidden = false;
+    
+    // Show share controls
+    document.getElementById('shareControls').hidden = false;
   }
 
   nextBtn.addEventListener('click', () => {
@@ -587,6 +687,57 @@
     resetQuiz();
     showQuestion();
   });
+
+  // Share functionality
+  document.getElementById('shareBtn').addEventListener('click', async () => {
+    const pct = Math.round((score / total) * 100);
+    const message = `🎯 Ich habe ${score} von ${total} Fragen richtig beantwortet (${pct}%) beim "Fair genug?" Gleichberechtigungs-Quiz! Wie fair ist dein Wissen?`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Fair genug? — Gleichberechtigungs-Quiz',
+          text: message,
+          url: window.location.href
+        });
+      } catch (err) {
+        // Fallback to clipboard if share dialog is cancelled or fails
+        copyToClipboard(message);
+      }
+    } else {
+      // Fallback for browsers without Web Share API
+      copyToClipboard(message);
+    }
+  });
+
+  function copyToClipboard(text) {
+    // Create a temporary textarea to copy text
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    
+    try {
+      document.execCommand('copy');
+      // Show a temporary success message
+      const shareBtn = document.getElementById('shareBtn');
+      const originalText = shareBtn.textContent;
+      shareBtn.textContent = '✓ In Zwischenablage kopiert!';
+      shareBtn.style.background = 'linear-gradient(135deg, #0f8a4f, #0d9488)';
+      
+      setTimeout(() => {
+        shareBtn.textContent = originalText;
+        shareBtn.style.background = '';
+      }, 2000);
+    } catch (err) {
+      console.error('Konnte nicht in Zwischenablage kopieren:', err);
+      alert('Kopiere diesen Text zum Teilen:\n\n' + text);
+    }
+    
+    document.body.removeChild(textarea);
+  }
 
   resetQuiz();
   showQuestion();
